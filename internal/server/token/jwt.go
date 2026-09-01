@@ -1,0 +1,34 @@
+package token
+
+import (
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+type JWTService struct {
+	secretKey string
+}
+
+func NewJWTService(secretKey string) *JWTService {
+	return &JWTService{
+		secretKey: secretKey,
+	}
+}
+
+func (s *JWTService) Generate(
+	userID int,
+	login string,
+	role string,
+) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"login":   login,
+		"role":    role,
+		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	return token.SignedString([]byte(s.secretKey))
+}
