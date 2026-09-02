@@ -19,7 +19,7 @@ make docker-down
 docker compose down
 Остановить PostgreSQL и удалить volumes
 
-⚠️ Команда удалит данные PostgreSQL.
+⚠️ Команда удалит все данные PostgreSQL.
 
 docker compose down -v
 Migrations
@@ -32,13 +32,13 @@ make migrate-version
 Создать новую миграцию
 migrate create -ext sql -dir migrations -seq migration_name
 
-После выполнения команды появятся:
+После выполнения команды будут созданы:
 
 000XXX_migration_name.up.sql
 000XXX_migration_name.down.sql
 Seeds
 
-Сиды добавляют тестовые данные в базу.
+Сиды добавляют тестовые данные в базу данных.
 
 Запустить сиды
 make seed
@@ -55,15 +55,23 @@ make seed
 
 Environment
 
-В корне проекта находится .env:
+В корне проекта находится файл .env.
+
+Пример конфигурации:
 
 DATABASE_URL=postgres://auth:auth@localhost:5432/auth?sslmode=disable
 
 JWT_SECRET=your-secret-key
 
+Для проекта также предусмотрен .env.dist с примером необходимых переменных окружения.
+
 Переменные окружения автоматически загружаются приложением через godotenv.
 
-Выполнять source .env не требуется.
+Выполнять:
+
+source .env
+
+не требуется.
 
 Project Structure
 auth-service/
@@ -82,7 +90,7 @@ auth-service/
 │   ├── http/
 │   │   ├── auth.go
 │   │   ├── dto/
-│   │   │   └── login.go
+│   │   │   └── auth.go
 │   │   ├── response.go
 │   │   └── router.go
 │   │
@@ -92,12 +100,16 @@ auth-service/
 │   ├── postgres/
 │   │   └── postgres.go
 │   │
-│   ├── seeds/
-│   │   ├── roles.go
-│   │   └── users.go
-│   │
-│   └── user/
-│       └── user.go
+│   └── repository/
+│       ├── role/
+│       │   └── role.go
+│       │
+│       ├── seeds/
+│       │   ├── roles.go
+│       │   └── users.go
+│       │
+│       └── user/
+│           └── user.go
 │
 ├── migrations/
 │   ├── 000001_create_roles.up.sql
@@ -105,8 +117,11 @@ auth-service/
 │   ├── 000002_create_users.up.sql
 │   └── 000002_create_users.down.sql
 │
+├── .env
+├── .env.dist
 ├── docker-compose.yml
 ├── Makefile
+├── README.md
 ├── go.mod
 └── go.sum
 Authentication
@@ -151,7 +166,59 @@ LoginResponse
   "error": "invalid_credentials",
   "message": "Invalid login or password"
 }
-Основные команды
+Registration
+
+Регистрация нового пользователя выполняется через:
+
+POST /register
+Процесс регистрации
+HTTP Request
+     ↓
+RegisterRequest
+     ↓
+Validation
+     ↓
+Hash password with bcrypt
+     ↓
+CreateUser
+     ↓
+Database
+     ↓
+Response
+
+Новый пользователь создаётся с ролью по умолчанию.
+
+Пример запроса
+curl -X POST http://localhost:8080/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Boris",
+    "login": "boris",
+    "password": "password123"
+  }'
+API Examples
+Register
+curl -X POST http://localhost:8080/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Boris",
+    "login": "boris",
+    "password": "password123"
+  }'
+Login
+
+После регистрации пользователя можно выполнить авторизацию:
+
+curl -X POST http://localhost:8080/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "login": "boris",
+    "password": "password123"
+  }'
+
+При успешной авторизации сервис возвращает JWT-токен.
+
+Main Commands
 Запустить PostgreSQL
 make docker-up
 Остановить PostgreSQL

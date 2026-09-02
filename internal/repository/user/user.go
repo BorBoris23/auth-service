@@ -5,10 +5,10 @@ import (
 	"errors"
 	"time"
 
-	"auth-service/internal/role"
-
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"auth-service/internal/repository/role"
 )
 
 type UserRepository struct {

@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	"auth-service/internal/jwt"
-	"auth-service/internal/role"
-	"auth-service/internal/user"
+	"auth-service/internal/repository/role"
+	"auth-service/internal/repository/user"
 
 	"golang.org/x/crypto/bcrypt"
 )

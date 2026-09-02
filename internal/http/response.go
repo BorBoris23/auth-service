@@ -2,7 +2,7 @@ package http
 
 import (
 	"auth-service/internal/http/dto"
-	"auth-service/internal/user"
+	"auth-service/internal/repository/user"
 	"encoding/json"
 	"net/http"
 )

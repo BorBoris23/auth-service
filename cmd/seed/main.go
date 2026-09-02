@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"auth-service/internal/postgres"
-	seed "auth-service/internal/seeds"
+	seed "auth-service/internal/repository/seeds"
 
 	"github.com/joho/godotenv"
 )
