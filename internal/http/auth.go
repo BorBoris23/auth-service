@@ -28,25 +28,12 @@ func NewAuthController(
 func (c *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	var request dto.LoginRequest
 
-	err := json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		writeError(
-			w,
-			http.StatusBadRequest,
-			"invalid_request",
-			"Invalid request body",
-		)
-		return
-	}
-
-	err = c.validate.Struct(request)
-	if err != nil {
-		writeError(
-			w,
-			http.StatusBadRequest,
-			"validation_failed",
-			"Login and password are required",
-		)
+	if !c.decodeAndValidate(
+		w,
+		r,
+		&request,
+		"Login and password are required",
+	) {
 		return
 	}
 
@@ -68,8 +55,76 @@ func (c *AuthController) Login(w http.ResponseWriter, r *http.Request) {
 	if err := writeJSON(
 		w,
 		http.StatusOK,
-		newLoginResponse(user, jwtToken),
+		newAuthResponse(user, jwtToken, "login successful"),
 	); err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 	}
+}
+
+func (c *AuthController) Register(w http.ResponseWriter, r *http.Request) {
+	var request dto.RegisterRequest
+
+	if !c.decodeAndValidate(
+		w,
+		r,
+		&request,
+		"Name, login and password are required",
+	) {
+		return
+	}
+
+	user, jwtToken, err := c.authService.Register(
+		r.Context(),
+		request.Name,
+		request.Login,
+		request.Password,
+	)
+	if err != nil {
+		writeError(
+			w,
+			http.StatusConflict,
+			"registration_failed",
+			"User with this login already exists",
+		)
+		return
+	}
+
+	if err := writeJSON(
+		w,
+		http.StatusCreated,
+		newAuthResponse(user, jwtToken, "registration successful"),
+	); err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
+}
+
+func (c *AuthController) decodeAndValidate(
+	w http.ResponseWriter,
+	r *http.Request,
+	request any,
+	message string,
+) bool {
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
+		writeError(
+			w,
+			http.StatusBadRequest,
+			"invalid_request",
+			"Invalid request body",
+		)
+		return false
+	}
+
+	err = c.validate.Struct(request)
+	if err != nil {
+		writeError(
+			w,
+			http.StatusBadRequest,
+			"validation_failed",
+			message,
+		)
+		return false
+	}
+
+	return true
 }

@@ -26,9 +26,13 @@ func writeError(
 	})
 }
 
-func newLoginResponse(user *user.User, jwtToken string) dto.LoginResponse {
-	return dto.LoginResponse{
-		Message: "login successful",
+func newAuthResponse(
+	user *user.User,
+	jwtToken string,
+	message string,
+) dto.AuthResponse {
+	return dto.AuthResponse{
+		Message: message,
 		Token:   jwtToken,
 		User: dto.UserResponse{
 			ID:    user.ID,
