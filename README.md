@@ -19,7 +19,7 @@ make docker-down
 docker compose down
 Остановить PostgreSQL и удалить volumes
 
-⚠️ Удалит данные PostgreSQL.
+⚠️ Команда удалит данные PostgreSQL.
 
 docker compose down -v
 Migrations
@@ -58,46 +58,46 @@ Environment
 В корне проекта находится .env:
 
 DATABASE_URL=postgres://auth:auth@localhost:5432/auth?sslmode=disable
+
 JWT_SECRET=your-secret-key
 
 Переменные окружения автоматически загружаются приложением через godotenv.
 
-source .env выполнять не требуется.
+Выполнять source .env не требуется.
 
 Project Structure
 auth-service/
+│
 ├── cmd/
 │   ├── auth/
 │   │   └── main.go
+│   │
 │   └── seed/
 │       └── main.go
 │
 ├── internal/
-│   ├── database/
-│   │   └── postgres.go
+│   ├── auth/
+│   │   └── auth.go
 │   │
-│   ├── repository/
-│   │   └── user.go
+│   ├── http/
+│   │   ├── auth.go
+│   │   ├── dto/
+│   │   │   └── login.go
+│   │   ├── response.go
+│   │   └── router.go
+│   │
+│   ├── jwt/
+│   │   └── jwt.go
+│   │
+│   ├── postgres/
+│   │   └── postgres.go
 │   │
 │   ├── seeds/
 │   │   ├── roles.go
 │   │   └── users.go
 │   │
-│   └── server/
-│       ├── dto/
-│       │   └── login.go
-│       │
-│       ├── handlers/
-│       │   ├── auth.go
-│       │   └── response.go
-│       │
-│       ├── service/
-│       │   └── auth.go
-│       │
-│       ├── token/
-│       │   └── jwt.go
-│       │
-│       └── router.go
+│   └── user/
+│       └── user.go
 │
 ├── migrations/
 │   ├── 000001_create_roles.up.sql
@@ -111,10 +111,10 @@ auth-service/
 └── go.sum
 Authentication
 
-Авторизация выполняется через POST /login.
+Авторизация выполняется через:
 
-Процесс авторизации:
-
+POST /login
+Процесс авторизации
 HTTP Request
      ↓
 LoginRequest
@@ -130,8 +130,9 @@ FindRoleByID
 Generate JWT
      ↓
 LoginResponse
+Успешная авторизация
 
-При успешной авторизации сервис возвращает:
+Сервис возвращает HTTP 200 OK:
 
 {
   "message": "login successful",
@@ -142,8 +143,9 @@ LoginResponse
     "role": "admin"
   }
 }
+Неверный логин или пароль
 
-При неверном логине или пароле возвращается HTTP 401 Unauthorized:
+Сервис возвращает HTTP 401 Unauthorized:
 
 {
   "error": "invalid_credentials",

@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/go-faker/faker/v4"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func SeedUsers(ctx context.Context, conn *pgx.Conn) error {
+func SeedUsers(ctx context.Context, conn *pgxpool.Pool) error {
 	var adminRoleID int
 
 	err := conn.QueryRow(

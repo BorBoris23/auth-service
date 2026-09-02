@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"auth-service/internal/database"
+	"auth-service/internal/postgres"
 	seed "auth-service/internal/seeds"
 
 	"github.com/joho/godotenv"
@@ -18,11 +18,11 @@ func main() {
 
 	ctx := context.Background()
 
-	conn, err := database.Connect()
+	conn, err := postgres.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close(ctx)
+	defer conn.Close()
 
 	if err := seed.SeedRoles(ctx, conn); err != nil {
 		log.Fatal(err)

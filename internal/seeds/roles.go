@@ -3,10 +3,10 @@ package seed
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func SeedRoles(ctx context.Context, conn *pgx.Conn) error {
+func SeedRoles(ctx context.Context, conn *pgxpool.Pool) error {
 	_, err := conn.Exec(ctx, `
 		INSERT INTO roles (name)
 		VALUES

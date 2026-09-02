@@ -1,0 +1,75 @@
+package http
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"auth-service/internal/auth"
+	"auth-service/internal/http/dto"
+
+	"github.com/go-playground/validator/v10"
+)
+
+type AuthController struct {
+	validate    *validator.Validate
+	authService *auth.AuthService
+}
+
+func NewAuthController(
+	validate *validator.Validate,
+	authService *auth.AuthService,
+) *AuthController {
+	return &AuthController{
+		validate:    validate,
+		authService: authService,
+	}
+}
+
+func (c *AuthController) Login(w http.ResponseWriter, r *http.Request) {
+	var request dto.LoginRequest
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		writeError(
+			w,
+			http.StatusBadRequest,
+			"invalid_request",
+			"Invalid request body",
+		)
+		return
+	}
+
+	err = c.validate.Struct(request)
+	if err != nil {
+		writeError(
+			w,
+			http.StatusBadRequest,
+			"validation_failed",
+			"Login and password are required",
+		)
+		return
+	}
+
+	user, jwtToken, err := c.authService.Login(
+		r.Context(),
+		request.Login,
+		request.Password,
+	)
+	if err != nil {
+		writeError(
+			w,
+			http.StatusUnauthorized,
+			"invalid_credentials",
+			"Invalid login or password",
+		)
+		return
+	}
+
+	if err := writeJSON(
+		w,
+		http.StatusOK,
+		newLoginResponse(user, jwtToken),
+	); err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
+}

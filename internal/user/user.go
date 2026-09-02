@@ -1,31 +1,29 @@
-package repository
+package user
 
 import (
 	"context"
 	"errors"
 
+	"auth-service/internal/role"
+
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type UserRepository struct {
-	dbConn *pgx.Conn
+	db *pgxpool.Pool
 }
 
 type User struct {
 	ID           int
 	Login        string
 	PasswordHash string
-	Role         Role
+	Role         role.Role
 }
 
-type Role struct {
-	ID   int
-	Name string
-}
-
-func NewUserRepository(dbConn *pgx.Conn) *UserRepository {
+func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 	return &UserRepository{
-		dbConn: dbConn,
+		db: db,
 	}
 }
 
@@ -35,7 +33,7 @@ func (r *UserRepository) FindUser(
 ) (*User, error) {
 	var user User
 
-	err := r.dbConn.QueryRow(
+	err := r.db.QueryRow(
 		ctx,
 		`
 			SELECT id, login, password, role_id
@@ -59,30 +57,4 @@ func (r *UserRepository) FindUser(
 	}
 
 	return &user, nil
-}
-
-func (r *UserRepository) FindRoleByID(
-	ctx context.Context,
-	roleID int,
-) (*Role, error) {
-	var role Role
-
-	err := r.dbConn.QueryRow(
-		ctx,
-		`
-			SELECT id, name
-			FROM roles
-			WHERE id = $1
-		`,
-		roleID,
-	).Scan(
-		&role.ID,
-		&role.Name,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &role, nil
 }

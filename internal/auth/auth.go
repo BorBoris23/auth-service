@@ -1,26 +1,30 @@
-package service
+package auth
 
 import (
 	"context"
 	"errors"
 
-	"auth-service/internal/repository"
-	"auth-service/internal/server/token"
+	"auth-service/internal/jwt"
+	"auth-service/internal/role"
+	"auth-service/internal/user"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
-	userRepository *repository.UserRepository
-	jwtService     *token.JWTService
+	userRepository *user.UserRepository
+	roleRepository *role.RoleRepository
+	jwtService     *jwt.JWTService
 }
 
 func NewAuthService(
-	userRepository *repository.UserRepository,
-	jwtService *token.JWTService,
+	userRepository *user.UserRepository,
+	roleRepository *role.RoleRepository,
+	jwtService *jwt.JWTService,
 ) *AuthService {
 	return &AuthService{
 		userRepository: userRepository,
+		roleRepository: roleRepository,
 		jwtService:     jwtService,
 	}
 }
@@ -29,7 +33,7 @@ func (s *AuthService) Login(
 	ctx context.Context,
 	login string,
 	password string,
-) (*repository.User, string, error) {
+) (*user.User, string, error) {
 	user, err := s.userRepository.FindUser(ctx, login)
 	if err != nil {
 		return nil, "", err
@@ -40,7 +44,7 @@ func (s *AuthService) Login(
 		return nil, "", errors.New("invalid credentials")
 	}
 
-	role, err := s.userRepository.FindRoleByID(ctx, user.Role.ID)
+	role, err := s.roleRepository.FindByID(ctx, user.Role.ID)
 	if err != nil {
 		return nil, "", err
 	}

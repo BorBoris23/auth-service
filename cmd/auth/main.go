@@ -1,19 +1,18 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
 
-	"auth-service/internal/database"
-	"auth-service/internal/repository"
-	"auth-service/internal/server"
-	"auth-service/internal/server/handlers"
-	"auth-service/internal/server/service"
-	"auth-service/internal/server/token"
+	"auth-service/internal/auth"
+	internalhttp "auth-service/internal/http"
+	"auth-service/internal/jwt"
+	"auth-service/internal/postgres"
+	"auth-service/internal/role"
+	"auth-service/internal/user"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -26,27 +25,29 @@ func main() {
 
 	validate := validator.New()
 
-	conn, err := database.Connect()
+	conn, err := postgres.Connect()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close(context.Background())
+	defer conn.Close()
 
-	userRepository := repository.NewUserRepository(conn)
+	userRepository := user.NewUserRepository(conn)
+	roleRepository := role.NewRoleRepository(conn)
 
-	jwtService := token.NewJWTService(os.Getenv("JWT_SECRET"))
+	jwtService := jwt.NewJWTService(os.Getenv("JWT_SECRET"))
 
-	authService := service.NewAuthService(
+	authService := auth.NewAuthService(
 		userRepository,
+		roleRepository,
 		jwtService,
 	)
 
-	authHandler := handlers.NewAuthHandler(
+	authController := internalhttp.NewAuthController(
 		validate,
 		authService,
 	)
 
-	router := server.NewRouter(authHandler)
+	router := internalhttp.NewRouter(authController)
 
 	log.Println("Auth service started on :8080")
 
