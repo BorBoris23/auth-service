@@ -5,6 +5,7 @@ go 1.26.4
 require github.com/jackc/pgx/v5 v5.10.0
 
 require (
+	github.com/BorBoris23/auth-proto v0.0.0-20260903120406-09c73a244f72 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/go-faker/faker/v4 v4.11.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
@@ -17,7 +18,11 @@ require (
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
+	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
+	google.golang.org/grpc v1.83.2 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 )

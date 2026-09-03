@@ -5,16 +5,16 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 
 	"auth-service/internal/auth"
+	grpcauth "auth-service/internal/grpc"
 	internalhttp "auth-service/internal/http"
 	"auth-service/internal/jwt"
 	"auth-service/internal/postgres"
 	"auth-service/internal/repository/role"
 	"auth-service/internal/repository/user"
-
-	"github.com/go-playground/validator/v10"
 )
 
 func main() {
@@ -49,7 +49,11 @@ func main() {
 
 	router := internalhttp.NewRouter(authController)
 
-	log.Println("Auth service started on :8080")
+	authServer := grpcauth.NewAuthServer(jwtService)
+
+	go startGRPCServer(authServer)
+
+	log.Println("Auth HTTP service started on :8080")
 
 	err = http.ListenAndServe(":8080", router)
 	if err != nil {
