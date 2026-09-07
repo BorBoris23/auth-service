@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
@@ -34,7 +35,15 @@ func main() {
 	userRepository := user.NewUserRepository(conn)
 	roleRepository := role.NewRoleRepository(conn)
 
-	jwtService := jwt.NewJWTService(os.Getenv("JWT_SECRET"))
+	expiresIn, err := time.ParseDuration(os.Getenv("JWT_EXPIRES_IN"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	jwtService := jwt.NewJWTService(
+		os.Getenv("JWT_SECRET"),
+		expiresIn,
+	)
 
 	authService := auth.NewAuthService(
 		userRepository,

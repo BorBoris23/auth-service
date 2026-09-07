@@ -9,6 +9,7 @@ import (
 
 type JWTService struct {
 	secretKey string
+	expiresIn time.Duration
 }
 
 type Claims struct {
@@ -19,9 +20,10 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func NewJWTService(secretKey string) *JWTService {
+func NewJWTService(secretKey string, expiresIn time.Duration) *JWTService {
 	return &JWTService{
 		secretKey: secretKey,
+		expiresIn: expiresIn,
 	}
 }
 
@@ -36,7 +38,7 @@ func (s *JWTService) Generate(
 		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(
-				time.Now().Add(24 * time.Hour),
+				time.Now().Add(s.expiresIn),
 			),
 		},
 	}
