@@ -4,20 +4,20 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"auth-service/internal/auth"
 	"auth-service/internal/http/dto"
+	"auth-service/internal/services"
 
 	"github.com/go-playground/validator/v10"
 )
 
 type AuthController struct {
 	validate    *validator.Validate
-	authService *auth.AuthService
+	authService *services.AuthService
 }
 
 func NewAuthController(
 	validate *validator.Validate,
-	authService *auth.AuthService,
+	authService *services.AuthService,
 ) *AuthController {
 	return &AuthController{
 		validate:    validate,

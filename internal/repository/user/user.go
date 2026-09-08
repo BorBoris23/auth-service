@@ -109,3 +109,28 @@ func (r *UserRepository) FindUser(
 
 	return &user, nil
 }
+
+func (r *UserRepository) FindUserById(
+	ctx context.Context,
+	id int64,
+) (bool, error) {
+	var exists bool
+
+	err := r.db.QueryRow(
+		ctx,
+		`
+			SELECT EXISTS (
+				SELECT 1
+				FROM users
+				WHERE id = $1
+			)
+		`,
+		id,
+	).Scan(&exists)
+
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}

@@ -9,13 +9,13 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 
-	"auth-service/internal/auth"
 	grpcauth "auth-service/internal/grpc"
 	internalhttp "auth-service/internal/http"
 	"auth-service/internal/jwt"
 	"auth-service/internal/postgres"
 	"auth-service/internal/repository/role"
 	"auth-service/internal/repository/user"
+	"auth-service/internal/services"
 )
 
 func main() {
@@ -45,7 +45,7 @@ func main() {
 		expiresIn,
 	)
 
-	authService := auth.NewAuthService(
+	authService := services.NewAuthService(
 		userRepository,
 		roleRepository,
 		jwtService,
