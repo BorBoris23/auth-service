@@ -20,7 +20,7 @@ func NewUserServer(userService *services.UserService) *UserServer {
 	}
 }
 
-func (s *UserServer) ValidateUserId(
+func (s *UserServer) ValidateUsers(
 	ctx context.Context,
 	req *usershpb.ValidateUsersRequest,
 ) (*usershpb.ValidateUsersResponse, error) {

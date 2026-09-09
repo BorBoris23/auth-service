@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -56,15 +57,27 @@ func main() {
 		authService,
 	)
 
+	userService := services.NewUserService(
+		userRepository,
+		roleRepository,
+	)
+
 	router := internalhttp.NewRouter(authController)
 
 	authServer := grpcauth.NewAuthServer(jwtService)
+	userServer := grpcauth.NewUserServer(userService)
 
-	go startGRPCServer(authServer)
+	go startGRPCAuthServer(authServer)
+	go startGRPCUserServer(userServer)
 
-	log.Println("Auth HTTP service started on :8080")
+	httpPort := os.Getenv("AUTH_HTTP_PORT")
 
-	err = http.ListenAndServe(":8080", router)
+	log.Printf("Auth HTTP service started on :%s", httpPort)
+
+	err = http.ListenAndServe(
+		fmt.Sprintf(":%s", httpPort),
+		router,
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
