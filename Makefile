@@ -14,7 +14,10 @@ seed:
 	go run cmd/seed/main.go
 
 auth:
-# 	go run cmd/auth/main.go
+	go run ./cmd/auth
+
+up:
+	docker compose up -d
 	go run ./cmd/auth
 
 docker-up:

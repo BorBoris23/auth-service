@@ -13,6 +13,7 @@ import (
 	grpcauth "auth-service/internal/grpc"
 	internalhttp "auth-service/internal/http"
 	"auth-service/internal/jwt"
+	"auth-service/internal/kafka"
 	"auth-service/internal/postgres"
 	"auth-service/internal/repository/role"
 	"auth-service/internal/repository/user"
@@ -46,10 +47,16 @@ func main() {
 		expiresIn,
 	)
 
+	producer := kafka.NewProducer(
+		os.Getenv("KAFKA_BROKER"),
+		os.Getenv("KAFKA_USER_CREATED_TOPIC"),
+	)
+
 	authService := services.NewAuthService(
 		userRepository,
 		roleRepository,
 		jwtService,
+		producer,
 	)
 
 	authController := internalhttp.NewAuthController(
