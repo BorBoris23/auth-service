@@ -2,12 +2,10 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"strconv"
 
+	"auth-service/internal/events"
 	"auth-service/internal/jwt"
-	"auth-service/internal/kafka"
 	"auth-service/internal/repository/role"
 	"auth-service/internal/repository/user"
 
@@ -18,26 +16,20 @@ type AuthService struct {
 	userRepository *user.UserRepository
 	roleRepository *role.RoleRepository
 	jwtService     *jwt.JWTService
-	producer       *kafka.Producer
-}
-
-type UserCreatedNotification struct {
-	UserID int
-	Name   string
-	Login  string
+	dispatcher     *events.Dispatcher
 }
 
 func NewAuthService(
 	userRepository *user.UserRepository,
 	roleRepository *role.RoleRepository,
 	jwtService *jwt.JWTService,
-	producer *kafka.Producer,
+	dispatcher *events.Dispatcher,
 ) *AuthService {
 	return &AuthService{
 		userRepository: userRepository,
 		roleRepository: roleRepository,
 		jwtService:     jwtService,
-		producer:       producer,
+		dispatcher:     dispatcher,
 	}
 }
 
@@ -103,29 +95,18 @@ func (s *AuthService) Register(
 		return nil, "", err
 	}
 
-	return newUser, token, nil
-}
-
-func (s *AuthService) publishUserCreated(
-	ctx context.Context,
-	u *user.User,
-) error {
-	notification := UserCreatedNotification{
-		UserID: u.ID,
-		Name:   u.Name,
-		Login:  u.Login,
-	}
-
-	notificationJSON, err := json.Marshal(notification)
-	if err != nil {
-		return err
-	}
-
-	return s.producer.Publish(
-		ctx,
-		strconv.Itoa(u.ID),
-		notificationJSON,
+	event := events.NewUserCreatedEvent(
+		newUser.ID,
+		newUser.Name,
+		newUser.Login,
 	)
+
+	err = s.dispatcher.Dispatch(ctx, event)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return newUser, token, nil
 }
 
 func (s *AuthService) loadUserRole(

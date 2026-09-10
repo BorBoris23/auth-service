@@ -10,6 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 
+	"auth-service/internal/events"
 	grpcauth "auth-service/internal/grpc"
 	internalhttp "auth-service/internal/http"
 	"auth-service/internal/jwt"
@@ -51,12 +52,26 @@ func main() {
 		os.Getenv("KAFKA_BROKER"),
 		os.Getenv("KAFKA_USER_CREATED_TOPIC"),
 	)
+	defer producer.Close()
+
+	publisher := events.NewPublisher(producer)
+
+	dispatcher := events.NewDispatcher()
+
+	userCreatedListener := events.NewUserCreatedListener(
+		publisher,
+	)
+
+	dispatcher.AddListener(
+		events.UserCreatedEventName,
+		userCreatedListener,
+	)
 
 	authService := services.NewAuthService(
 		userRepository,
 		roleRepository,
 		jwtService,
-		producer,
+		dispatcher,
 	)
 
 	authController := internalhttp.NewAuthController(
