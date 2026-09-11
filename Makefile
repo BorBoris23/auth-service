@@ -25,3 +25,5 @@ docker-up:
 
 docker-down:
 	docker compose down
+
+#   http://localhost:8080/register

@@ -8,6 +8,11 @@ import (
 	"auth-service/internal/kafka"
 )
 
+type Message struct {
+	Event string `json:"event"`
+	Data  any    `json:"data"`
+}
+
 type Publisher struct {
 	producer *kafka.Producer
 }
@@ -22,7 +27,12 @@ func (p *Publisher) PublishUserCreated(
 	ctx context.Context,
 	event UserCreatedEvent,
 ) error {
-	eventJSON, err := json.Marshal(event)
+	message := Message{
+		Event: event.Name(),
+		Data:  event,
+	}
+
+	eventJSON, err := json.Marshal(message)
 	if err != nil {
 		return err
 	}

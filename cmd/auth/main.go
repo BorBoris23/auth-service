@@ -54,6 +54,11 @@ func main() {
 	)
 	defer producer.Close()
 
+	log.Printf(
+		"Kafka producer started on %s",
+		os.Getenv("KAFKA_BROKER"),
+	)
+
 	publisher := events.NewPublisher(producer)
 
 	dispatcher := events.NewDispatcher()
